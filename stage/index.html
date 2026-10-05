@@ -5,14 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Tests Passed Rave</title>
 <style>
-  :root {
-    --font: "Arial Black", "Segoe UI Black", "Helvetica Neue", Impact, system-ui, sans-serif;
-    --accent: #39ff7a;
-  }
   * { box-sizing: border-box; }
   html, body {
     margin: 0; height: 100%; overflow: hidden;
-    background: #020408; color: #fff; font-family: var(--font);
+    background: #020408;
   }
   body.idle { cursor: none; }
   canvas#stage { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
@@ -24,85 +20,6 @@
     mix-blend-mode: multiply;
   }
   .fx.vignette { background: radial-gradient(ellipse at center, rgba(0,0,0,0) 55%, rgba(0,0,0,.75) 100%); }
-
-  #hud {
-    position: fixed; inset: 0; pointer-events: none;
-    display: flex; flex-direction: column; align-items: center;
-    padding: max(16px, 4vh) 16px 0;
-    text-align: center;
-  }
-  #hud.hidden { display: none; }
-
-  #title {
-    margin: 0; line-height: 1.05; font-weight: 900;
-    font-size: clamp(30px, 7.5vw, 132px); letter-spacing: .02em;
-    animation: hue 6s linear infinite;
-    max-width: 100%; overflow-wrap: anywhere;
-  }
-  body.green #title { animation: none; }
-  #title span {
-    display: inline-block; white-space: pre;
-    color: hsl(var(--h), 100%, 62%);
-    text-shadow: 0 0 6px hsl(var(--h), 100%, 70%), 0 0 22px hsl(var(--h), 100%, 50%), 0 0 60px hsl(var(--h), 100%, 45%);
-    animation: bob 1.4s ease-in-out infinite;
-    animation-delay: calc(var(--i) * -0.09s);
-  }
-  @keyframes bob {
-    0%, 100% { transform: translateY(0) scale(1); }
-    50% { transform: translateY(-0.12em) scale(1.06); }
-  }
-  @keyframes hue { to { filter: hue-rotate(360deg); } }
-
-  #subtitle {
-    margin-top: .6em; font-size: clamp(12px, 1.8vw, 26px);
-    letter-spacing: .35em; text-transform: uppercase; color: #eafff0;
-    text-shadow: 0 0 8px var(--accent), 0 0 24px var(--accent);
-    animation: flicker 4s steps(1) infinite;
-  }
-  @keyframes flicker {
-    0%, 100% { opacity: 1; } 41% { opacity: .55; } 42% { opacity: 1; } 77% { opacity: .7; } 78% { opacity: 1; }
-  }
-
-  .spacer { flex: 1; }
-
-  #stats { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-bottom: 18px; }
-  #stats .chip {
-    font-size: clamp(12px, 1.5vw, 22px); padding: .45em 1em .45em .8em; border-radius: 999px;
-    background: rgba(0, 30, 10, .55); border: 2px solid var(--accent);
-    box-shadow: 0 0 12px var(--accent), inset 0 0 12px rgba(57,255,122,.35);
-    text-shadow: 0 0 8px var(--accent);
-    animation: pulse 2.2s ease-in-out infinite;
-  }
-  #stats .chip:nth-child(2n) { animation-delay: -.7s; }
-  #stats .chip:nth-child(3n) { animation-delay: -1.4s; }
-  #stats .chip::before { content: "✓ "; color: var(--accent); }
-  @keyframes pulse {
-    0%, 100% { transform: scale(1); box-shadow: 0 0 12px var(--accent), inset 0 0 12px rgba(57,255,122,.35); }
-    50% { transform: scale(1.07); box-shadow: 0 0 28px var(--accent), inset 0 0 18px rgba(57,255,122,.6); }
-  }
-  body:not(.green) #stats .chip { animation: pulse 2.2s ease-in-out infinite, hue 8s linear infinite; }
-
-  #ticker {
-    width: 100vw; overflow: hidden; white-space: nowrap;
-    background: rgba(0, 18, 6, .6); border-top: 2px solid var(--accent);
-    box-shadow: 0 0 24px var(--accent);
-    font-size: clamp(13px, 1.6vw, 22px); padding: .55em 0;
-  }
-  #ticker .track { display: inline-block; animation: scroll linear infinite; }
-  #ticker .item { margin-right: 3em; text-shadow: 0 0 8px var(--accent); }
-  #ticker .item b { color: var(--accent); margin-right: .5em; }
-  #ticker .item i { font-style: normal; color: #041; background: var(--accent); padding: 0 .4em; margin-left: .6em; border-radius: 4px; text-shadow: none; }
-  @keyframes scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-
-  #progress { position: fixed; left: 0; bottom: 0; height: 4px; width: 0; background: var(--accent); box-shadow: 0 0 12px var(--accent); }
-
-  #outro {
-    position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
-    background: #000; opacity: 0; pointer-events: none; transition: opacity 2.5s ease;
-    font-size: clamp(20px, 4vw, 60px); color: var(--accent); text-shadow: 0 0 20px var(--accent);
-    padding: 16px; text-align: center;
-  }
-  #outro.show { opacity: 1; }
 </style>
 </head>
 <body>
@@ -110,17 +27,7 @@
 <div class="fx scan"></div>
 <div class="fx vignette"></div>
 
-<div id="hud">
-  <h1 id="title"></h1>
-  <div id="subtitle"></div>
-  <div class="spacer"></div>
-  <div id="stats"></div>
-  <div id="ticker"></div>
-</div>
-<div id="progress"></div>
-<div id="outro"></div>
-
-<!-- Edit config.js for text/options, or use URL parameters (see README.md). -->
+<!-- Options live in config.js or URL parameters (see README.md). -->
 <script src="config.js"></script>
 <script src="rave.js"></script>
 </body>

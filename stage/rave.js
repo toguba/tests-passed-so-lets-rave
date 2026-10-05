@@ -3,29 +3,18 @@
 
   // ---------------------------------------------------------------- config
   const DEFAULTS = {
-    title: 'ALL TESTS PASSED',
-    subtitle: '',
-    stats: [],
-    ticker: [],
     palette: 'rainbow',
     strobe: true,
     speed: 1,
     density: 1,
-    duration: 30,
-    outro: '',
-    hud: true,
   };
   const cfg = Object.assign({}, DEFAULTS, window.STAGE_CONFIG || {});
   const params = new URLSearchParams(location.search);
-  const LISTS = ['stats', 'ticker'];
-  const BOOLS = ['strobe', 'hud'];
-  const NUMBERS = ['speed', 'density', 'duration'];
   for (const [key, raw] of params) {
     if (!(key in DEFAULTS)) continue;
-    if (LISTS.includes(key)) cfg[key] = raw.split('|').map(s => s.trim()).filter(Boolean);
-    else if (BOOLS.includes(key)) cfg[key] = !/^(0|false|no|off)$/i.test(raw);
-    else if (NUMBERS.includes(key)) { const n = parseFloat(raw); if (Number.isFinite(n)) cfg[key] = n; }
-    else cfg[key] = raw;
+    if (key === 'strobe') cfg[key] = !/^(0|false|no|off)$/i.test(raw);
+    else if (key === 'palette') cfg[key] = raw;
+    else { const n = parseFloat(raw); if (Number.isFinite(n)) cfg[key] = n; }
   }
   cfg.speed = Math.max(0, cfg.speed);
   cfg.density = Math.max(0, cfg.density);
@@ -36,67 +25,12 @@
     ? x => 128 + 34 * Math.sin(x * Math.PI * 2)
     : x => ((x * 360) % 360 + 360) % 360;
 
-  // ---------------------------------------------------------------- HUD
-  document.body.classList.toggle('green', GREEN);
-  const hudEl = document.getElementById('hud');
-  hudEl.classList.toggle('hidden', !cfg.hud);
-
-  const titleEl = document.getElementById('title');
-  [...String(cfg.title)].forEach((ch, i, all) => {
-    const span = document.createElement('span');
-    span.textContent = ch;
-    span.style.setProperty('--i', i);
-    span.style.setProperty('--h', GREEN ? 105 + (i / Math.max(1, all.length - 1)) * 55 : (i * 360 / all.length) % 360);
-    titleEl.appendChild(span);
-  });
-  document.title = cfg.title || document.title;
-
-  const subEl = document.getElementById('subtitle');
-  subEl.textContent = cfg.subtitle;
-  subEl.hidden = !cfg.subtitle;
-
-  const statsEl = document.getElementById('stats');
-  for (const s of cfg.stats) {
-    const chip = document.createElement('div');
-    chip.className = 'chip';
-    chip.textContent = s;
-    statsEl.appendChild(chip);
-  }
-
-  const tickerEl = document.getElementById('ticker');
-  if (cfg.ticker.length) {
-    const track = document.createElement('div');
-    track.className = 'track';
-    // Two copies so the -50% scroll loops seamlessly.
-    for (let copy = 0; copy < 2; copy++) {
-      for (const name of cfg.ticker) {
-        const item = document.createElement('span');
-        item.className = 'item';
-        const b = document.createElement('b'); b.textContent = '✓';
-        const i = document.createElement('i'); i.textContent = 'PASS';
-        item.append(b, name, i);
-        track.appendChild(item);
-      }
-    }
-    const chars = cfg.ticker.join('').length + cfg.ticker.length * 10;
-    track.style.animationDuration = Math.max(8, chars * 0.14) / Math.max(0.1, cfg.speed) + 's';
-    tickerEl.appendChild(track);
-  } else {
-    tickerEl.hidden = true;
-  }
-
-  const progressEl = document.getElementById('progress');
-  const outroEl = document.getElementById('outro');
-  outroEl.textContent = cfg.outro;
-  progressEl.hidden = !(cfg.duration > 0);
-
-  // Click = fullscreen, H = toggle text, hide cursor when idle.
+  // Click or F = fullscreen, hide cursor when idle.
   document.addEventListener('click', () => {
     if (!document.fullscreenElement) document.documentElement.requestFullscreen?.().catch(() => {});
     else document.exitFullscreen?.();
   });
   document.addEventListener('keydown', e => {
-    if (e.key === 'h' || e.key === 'H') hudEl.classList.toggle('hidden');
     if (e.key === 'f' || e.key === 'F') document.body.click();
   });
   let idleTimer;
@@ -442,9 +376,9 @@
   // ---------------------------------------------------------------- main loop
   const FLIP_EVERY = 6.5, FLIP_LEN = 1.3;
   const ease = x => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
-  let t = 0, last = performance.now(), start = last;
+  let t = 0, last = performance.now();
   let nextRing = 0, nextBurst = 1.2, nextStrobe = 4 + Math.random() * 4, lastFlipIndex = 0;
-  let strobeLeft = 0, outroShown = false;
+  let strobeLeft = 0;
   let started = false;
 
   function frame(now) {
@@ -514,13 +448,6 @@
     }
     dctx.globalAlpha = 1;
     dctx.globalCompositeOperation = 'source-over';
-
-    // duration / outro
-    if (cfg.duration > 0) {
-      const k = Math.min(1, (now - start) / 1000 / cfg.duration);
-      progressEl.style.width = (k * 100) + '%';
-      if (k >= 1 && !outroShown) { outroShown = true; outroEl.classList.add('show'); }
-    }
 
     requestAnimationFrame(frame);
   }
